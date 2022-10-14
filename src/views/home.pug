@@ -1,0 +1,46 @@
+html
+  head
+    title SSE Chat
+  body
+    ul#messages
+
+    form#messageForm
+      div
+        label(for="username") Username
+        input(id="username" required)
+      div
+        label(for="message") Message
+        input(id="message" required)
+      button Send
+  script.
+   const events = new EventSource("http://127.0.0.1:3000/events");
+
+   events.onmessage = (event) => {
+     const data = JSON.parse(event.data);
+     const strong = document.createElement("strong");
+     const username = strong.append(`${data.username}: `);
+     const li = document.createElement("li");
+     li.append(strong);
+     li.append(data.message);
+     document.querySelector("#messages").append(li);
+   };
+
+   document.querySelector("#messageForm").addEventListener("submit", (e) => {
+     e.preventDefault();
+
+     const data = {
+       username: document.querySelector("#username").value,
+       message: document.querySelector("#message").value,
+     };
+
+     fetch("http://127.0.0.1:3000/message", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify(data),
+     });
+
+     document.querySelector("#message").value = "";
+     document.querySelector("#message").focus();
+   });
